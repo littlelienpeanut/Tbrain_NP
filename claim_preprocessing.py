@@ -6,7 +6,7 @@ import csv
 
 def load_claim(fname):
     df = pd.read_csv('Lien_dataset/' + fname, low_memory=False)
-    ig_column = ['Claim_Number', 'Vehicle_identifier']
+    ig_column = ['Vehicle_identifier']
     one_hot_column = ['Accident_Time', "Driver's_Gender", 'Coverage',"Driver's_Relationship_with_Insured", 'Marital_Status_of_Driver', 'Cause_of_Loss', 'Accident_area']
     df = AT_onehot(df)
     df = bday2age(df)
@@ -58,7 +58,7 @@ df = load_claim(fname)
 df = acc(df)
 print('done!')
 print('writting csv')
-new_fname = 'claim_0702_v2.csv'
+new_fname = 'claim_0702_v3.csv'
 with open('Lien_dataset/' + new_fname, 'w', newline = '') as fout:
         wr = csv.writer(fout)
         title = []
