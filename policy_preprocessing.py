@@ -1,25 +1,51 @@
-### policy ###
-
 import pandas as pd
-import numpy as np
 import csv
 
-def load_claim(fname):
-    df = pd.read_csv(fname, low_memory=False)
-    ig_column = ['Vehicle_identifier', 'Coverage_Deductible_if_applied']
-    one_hot_column = ['Main_Insurance_Coverage_Group', 'Insurance_Coverage', 'fassured', 'fsex', 'fmarriage', 'aassured_zip']
+def acc(df):
+    acc_cate = ['Premium']
+    df_dict = {}
+    update_cate = []
+    cate = df.keys()
+    for c in df.keys():
+        if c.find('Insurance_Coverage') != -1 or c.find('Main_Insurance_Coverage_Group') != -1:
+            update_cate.append(c)
+    
+    for i in range(len(df)):
+        if i%100000 == 0:
+            print(str(i) + '/' + str(len(df)))
+        if df['Policy_Number'][i] in df_dict:
+            for c in acc_cate:
+                df_dict[df['Policy_Number'][i]][c] += df[c][i]
+            for c in update_cate:
+                if df[c][i] == 1:
+                    df_dict[df['Policy_Number'][i]][c] = 1
+                
+        
+        else:
+            df_dict.update({df['Policy_Number'][i]:{}})
+            for c in cate:
+                df_dict[df['Policy_Number'][i]].update({c:df[c][i]})
 
-    for name in ig_column:
-        df = df.drop(name, axis=1)
+    
+    return df_dict
 
-    for name in one_hot_column:
-        tmp = pd.get_dummies(df[name], prefix = name)
-        df = df.drop(name, axis=1)
-        df = df.join(tmp)
+df = pd.read_csv('Lien_dataset/policy_v2.csv', low_memory=False)
+df = acc(df)
 
-    return df
+print('writting csv')
 
-fname = 'policy_p.csv'
-print('data-preprocessing now')
-df = load_claim(fname)
-df.to_csv('policy_onehot.csv', index = False)
+new_fname = 'policy_0702_v3.csv'
+with open('Lien_dataset/' + new_fname, 'w', newline = '', encoding='utf-8') as fout:
+        wr = csv.writer(fout)
+        title = []
+        for key in df['79110176bf64b5094c19aad785aeac56e36cb609']:
+            title.append(key)
+
+        wr.writerow(title)
+
+        for pn in df.keys():
+            value = []
+            for cate in title:
+                value.append(df[pn][cate])
+
+            wr.writerow(value)
